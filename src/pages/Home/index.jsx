@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 
-import { FaGithub, FaPlus } from 'react-icons/fa';
+import { FaGithub, FaPlus, FaSpinner } from 'react-icons/fa';
 
 import { Container, Form, SubmitButton } from './styles';
 
@@ -9,28 +9,35 @@ import { api } from '../../services/api';
 const Home = () => {
   const [newRepo, setNewRepo] = useState('');
   const [repositorios, setRepositorios] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e) => {
     setNewRepo(e.target.value);
   };
 
-  const handleRequestRepos = useCallback(
+  const handleSubmit = useCallback(
     (e) => {
       e.preventDefault();
 
-      async function handleSubmit() {
-        const response = await api.get(`/repos/${newRepo}`);
+      async function submit() {
+        setLoading(true);
+        try {
+          const response = await api.get(`/repos/${newRepo}`);
 
-        const data = {
-          name: response.data.full_name,
-        };
-        setRepositorios([...repositorios, data]);
+          const data = {
+            name: response.data.full_name,
+          };
+          setRepositorios([...repositorios, data]);
 
-        console.log(repositorios);
-        setNewRepo('');
+          setNewRepo('');
+        } catch (error) {
+          console.log(error);
+        } finally {
+          setLoading(false);
+        }
       }
 
-      handleSubmit();
+      submit();
     },
     [newRepo, repositorios]
   );
@@ -42,7 +49,7 @@ const Home = () => {
         Meus Repositórios
       </h1>
 
-      <Form onSubmit={handleRequestRepos}>
+      <Form onSubmit={handleSubmit}>
         <input
           type='text'
           placeholder='Adicionar repo...'
@@ -50,8 +57,12 @@ const Home = () => {
           onChange={handleInputChange}
         />
 
-        <SubmitButton>
-          <FaPlus color='#fff' size={14} />
+        <SubmitButton loading={loading ? 1 : 0}>
+          {loading ? (
+            <FaSpinner color='#fff' size={14} />
+          ) : (
+            <FaPlus color='#fff' size={14} />
+          )}
         </SubmitButton>
       </Form>
     </Container>
