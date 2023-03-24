@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 
 import { FaBars, FaGithub, FaPlus, FaSpinner, FaTrash } from 'react-icons/fa';
 
@@ -16,10 +16,19 @@ const Home = () => {
   const [newRepo, setNewRepo] = useState('');
   const [repositorios, setRepositorios] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleInputChange = (e) => {
-    setNewRepo(e.target.value);
-  };
+  useEffect(() => {
+    const salvedRepos = localStorage.getItem('repos');
+
+    if (salvedRepos) {
+      setRepositorios(JSON.parse(salvedRepos));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('repos', JSON.stringify(repositorios));
+  }, [repositorios]);
 
   const handleSubmit = useCallback(
     (e) => {
@@ -27,8 +36,18 @@ const Home = () => {
 
       async function submit() {
         setLoading(true);
+        setError(null);
         try {
+          if (newRepo === '') {
+            throw new Error('Voçê precisa passar o nome de um repositório');
+          }
           const response = await api.get(`/repos/${newRepo}`);
+
+          const hasRepo = repositorios.find((repo) => repo.name === newRepo);
+
+          if (hasRepo) {
+            throw new Error('Esse repositório ja existe');
+          }
 
           const data = {
             name: response.data.full_name,
@@ -37,6 +56,7 @@ const Home = () => {
 
           setNewRepo('');
         } catch (error) {
+          setError(true);
           console.log(error);
         } finally {
           setLoading(false);
@@ -58,6 +78,11 @@ const Home = () => {
     [repositorios]
   );
 
+  const handleInputChange = (e) => {
+    setNewRepo(e.target.value);
+    setError(null);
+  };
+
   return (
     <Container>
       <h1>
@@ -65,7 +90,7 @@ const Home = () => {
         Meus Repositórios
       </h1>
 
-      <Form onSubmit={handleSubmit}>
+      <Form onSubmit={handleSubmit} err={error}>
         <input
           type='text'
           placeholder='Adicionar repo...'

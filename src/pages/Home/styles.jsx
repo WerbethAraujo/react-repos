@@ -30,7 +30,7 @@ export const Form = styled.form`
     font-size: 1.1rem;
     padding: 0.5rem 1rem;
     font-style: italic;
-    border: 1px solid #ccc;
+    border: 1px solid ${(props) => (props.err ? '#ff0000' : '#ccc')};
     border-radius: 0.3rem;
     transition: 0.5s;
 
