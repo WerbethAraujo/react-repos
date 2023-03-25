@@ -2,6 +2,8 @@ import React, { useState, useCallback, useEffect } from 'react';
 
 import { FaBars, FaGithub, FaPlus, FaSpinner, FaTrash } from 'react-icons/fa';
 
+import { Link } from 'react-router-dom';
+
 import {
   Container,
   Form,
@@ -116,9 +118,9 @@ const Home = () => {
               </DeleteButton>
               {repo.name}
             </span>
-            <a href='#'>
+            <Link to={`/repo/${repo.name}`}>
               <FaBars size={20} />
-            </a>
+            </Link>
           </li>
         ))}
       </ListContainer>
